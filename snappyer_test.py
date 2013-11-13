@@ -7,16 +7,15 @@ import snap # not necessary, just for test
 # Create a graph from an edge file
 graph = SnapGraph.fromEdgeFile("test_graph.txt",SnapGraph.TYPE_DIRECTED, 0, 1) # also TYPE_UNDIRECTED, TYPE_NETWORK
 
-# ---
-# Use raw snap.py functions to create, then import to Snappyer
-rawGraph = snap.GenSmallWorld(100, 10, 0.5)
-graph = SnapGraph(rawGraph)
-
 # or make a blank graph
 blankGraph = SnapGraph.Empty(SnapGraph.TYPE_UNDIRECTED)
 blankGraph.addNode(1)
 blankGraph.addNode(2)
 blankGraph.addEdge(1,2)
+
+# or use raw snap.py functions to create, then import to Snappyer
+rawGraph = snap.GenSmallWorld(100, 10, 0.5)
+graph = SnapGraph(rawGraph)
 
 # ---
 # the niceness of all functions is >= snap.py niceness
@@ -29,8 +28,7 @@ for node in graph.nodes: # graph.nodes returns an iterator of SnapNodes
     print node.id # or any other SnapNode property
 
 for edge in graph.edges:
-    print edge.destination # SnapNode
-    print edge.source # SnapNode
+    print "%s -> %s" % (edge.source, edge.destination) # .source and .destination are both SnapNodes
 
 # ---
 # all functions take ints (assumed to be node IDs) or SnapNodes
@@ -39,7 +37,7 @@ destination = 2
 graph.addEdge(source,destination)
 
 source = graph[1] # SnapNode
-destination = graph[2]
+destination = graph[2] # SnapNode
 graph.addEdge(source,destination) # works the same!
 
 # ---
@@ -90,7 +88,7 @@ for node in outNodes:
 
 inNodes = nodeTen.inNodes # list of SnapNodes
 for node in inNodes:
-    print "Node 10 has incoming from %d" % node.id
+    print "Node 10 has in edge from %d" % node.id
 
 x = nodeTen.id # 10
 x = nodeTen.inDegree
@@ -100,4 +98,4 @@ nodeTen.hasEdgeTo(randomNode) # bool
 nodeTen.hasEdgeFrom(randomNode) # bool
 nodeTen.isNeighborTo(randomNode) # bool
 
-nodeTen.nodesInWcc() # returns a set of SnapNodes that are within the same connected component as nodeTen
+nodeTen.nodesInWcc() # returns a set of SnapNodes that are within the same weakly connected component as nodeTen

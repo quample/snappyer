@@ -36,9 +36,9 @@ class SnapGraph(object):
             self.rawGraphType = self.TYPE_UNKNOWN
 
     @staticmethod
-    def FromEdgeFile(filename, graphType, sourceColId, destColId, separator="\t"):
+    def fromEdgeFile(filename, graphType, sourceColId, destColId):
         snapType = SnapUtil.snappyerToSnapType(graphType)
-        newGraph = snap.LoadEdgeList(snapType, filename, sourceColId, destColId, separator)
+        newGraph = snap.LoadEdgeList(snapType, filename, sourceColId, destColId)
         return SnapGraph(newGraph)
 
     def toEdgeFile(self, filename, comment=""):
@@ -49,7 +49,7 @@ class SnapGraph(object):
         if graphType == SnapGraph.TYPE_DIRECTED:
             return SnapGraph(snap.TNGraph.New())
         elif graphType == SnapGraph.TYPE_UNDIRECTED:
-            return SnapGraph(snap.TNGraph.New())
+            return SnapGraph(snap.TUNGraph.New())
         else:
             raise IndexError, "Illegal type of graph to create"
 
@@ -161,7 +161,7 @@ class SnapGraph(object):
 
     # search
 
-    def BFSTree(self, startNode, followOut=True, followIn=False):
+    def getBFSTree(self, startNode, followOut=True, followIn=False):
         snid = SnapNode.toId(startNode)
         return SnapGraph(snap.GetBfsTree(self.rawGraph, snid, followOut, followIn))
 
@@ -206,10 +206,15 @@ class SnapGraph(object):
     def addNode(self, nodeId):
         return self.rawGraph.AddNode(nodeId)
 
-    def addEdge(self,source, destination):
+    def addEdge(self, source, destination):
         sourceId = SnapNode.toId(source)
         destId = SnapNode.toId(destination)
         return self.rawGraph.AddEdge(sourceId, destId)
+
+    def deleteEdge(self, source, destination):
+        sourceId = SnapNode.toId(source)
+        destId = SnapNode.toId(destination)
+        self.rawGraph.DelEdge(sourceId, destId)
 
     def deleteSelfEdges(self):
         snap.DelSelfEdges(self.rawGraph)
@@ -315,6 +320,9 @@ class SnapEdge(object):
     @property
     def destination(self):
         return self.parentGraph[self.destId]
+
+    def __repr__(self):
+        return "<edge %d %d>" % (self.sourceId, self.destId)
 
 class SnapUtil(object):
     @staticmethod
