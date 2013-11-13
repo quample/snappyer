@@ -36,10 +36,13 @@ class SnapGraph(object):
             self.rawGraphType = self.TYPE_UNKNOWN
 
     @staticmethod
-    def fromEdgeFile(filename, graphType, sourceColId, destColId, separator="\t"):
+    def FromEdgeFile(filename, graphType, sourceColId, destColId, separator="\t"):
         snapType = SnapUtil.snappyerToSnapType(graphType)
         newGraph = snap.LoadEdgeList(snapType, filename, sourceColId, destColId, separator)
         return SnapGraph(newGraph)
+
+    def toEdgeFile(self, filename, comment=""):
+        snap.SaveEdgeList(self.rawGraph, filename, comment)
 
     @staticmethod
     def Empty(graphType):
@@ -84,8 +87,8 @@ class SnapGraph(object):
 
     @property
     def edges(self):
-        for node in self.rawGraph.Edges():
-            yield SnapEdge(node, self)
+        for edge in self.rawGraph.Edges():
+            yield SnapEdge(edge, self)
 
     # idk why this doesnt work either
     # @property
@@ -141,12 +144,13 @@ class SnapGraph(object):
 
     def getNodesByDegree(self):
         result = snap.TIntPrV()
-        nodesByDegree = collections.defaultdict(lambda: [])
+        nodesByDegree = []
         snap.GetNodeInDegV(self.rawGraph, result)
         for x in result:
-            nodesByDegree[x.GetVal2()].append(self.node(x.GetVal1()))
+            nodesByDegree.append((self.node(x.GetVal1()), x.GetVal2()))
 
-        return nodesByDegree
+
+        return sorted(nodesByDegree,key=lambda e: e[1], reverse=True)
 
     def getDegreeProportions(self):
         degrees = self.degreeDistribution
@@ -212,6 +216,9 @@ class SnapGraph(object):
 
     def deleteZeroDegreeNodes(self):
         snap.DelZeroDegNodes(self.rawGraph)
+
+    def delete(self, node):
+        self.rawGraph.DelNode(node.id)
 
     def __str__(self):
         return "SnapGraph (%d nodes, %d edges)" % (self.numNodes, self.numEdges)
